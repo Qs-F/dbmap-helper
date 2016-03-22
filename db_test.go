@@ -1,4 +1,4 @@
-package service
+package helper
 
 import (
 	"database/sql"
@@ -23,7 +23,7 @@ func TestInit(t *testing.T) {
 	if err != nil {
 		t.Error(err.Error())
 	}
-	d := &DB{db, "sqlite", nil}
+	d := &DB{db, TypeSQLite, nil}
 	o := []TableMap{{"table1", TestS{}}, {"table2", Test2{}}}
 	err = d.Init(o)
 	if err != nil {

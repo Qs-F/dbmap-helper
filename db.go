@@ -8,7 +8,7 @@
 // d.Init()
 // d.DbMap.Select(struct{}, SQL)
 // d.DbMap.Close()
-package service
+package helper
 
 import (
 	"database/sql"
@@ -18,14 +18,14 @@ import (
 )
 
 const (
-	TAGNAME    = "role"
-	TypeMySQL  = "mysql"
-	TypeSQLite = "sqlite"
+	tagname_  = "role"
+	TypeMySQL = iota
+	TypeSQLite
 )
 
 type DB struct {
 	DB     *sql.DB
-	DBType string
+	DBType int
 	DbMap  *gorp.DbMap
 }
 
@@ -34,13 +34,10 @@ type TableMap struct {
 	Struct interface{}
 }
 
-// gorp contains some dialects. how we use:
-// switch Dialect by DBtype
-// sql.Open must be written main.go by user. this is perfect !!!!!!
 func (d *DB) Init(s []TableMap) (err error) {
-	if d.DBType == "sqlite" {
+	if d.DBType == TypeSQLite {
 		d.DbMap = &gorp.DbMap{Db: d.DB, Dialect: gorp.SqliteDialect{}}
-	} else if d.DBType == "mysql" {
+	} else if d.DBType == TypeMySQL {
 		d.DbMap = &gorp.DbMap{Db: d.DB, Dialect: gorp.MySQLDialect{"InnoDB", "UTF8"}}
 	}
 	for _, v := range s { // pick up 1 struct
@@ -48,7 +45,7 @@ func (d *DB) Init(s []TableMap) (err error) {
 		id := ""
 		for j := 0; j < rt.NumField(); j++ { // to rename field name. pick up 1 struct field's tag
 			field := rt.Field(j) // focus field
-			if n := field.Tag.Get(TAGNAME); n == "id" && id == "" {
+			if n := field.Tag.Get(tagname_); n == "id" && id == "" {
 				id = field.Name
 			} else if n == "id" && id != "" {
 				err = errors.New("id must be only.")
